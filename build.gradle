@@ -1,0 +1,180 @@
+buildscript {
+    repositories {
+        maven {
+            url "${artifactory_contextUrl}/cx1testgradle-gradle-dev"
+            credentials {
+                username = "${artifactory_user}"
+                password = "${artifactory_password}"
+            }
+        }
+    }
+    dependencies {
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4+"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'com.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    maven {
+        url "${artifactory_contextUrl}/cx1testgradle-gradle-dev"
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'com.google.code.gson:gson:2.8.8'
+}
+
+allprojects {
+    apply plugin: "com.jfrog.artifactory"
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}" // The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'cx1testgradle-gradle-dev-local'
+            username = "${artifactory_user}" // Set Artifactory username here
+            password = "${artifactory_password}" // Set Artifactory password here
+            maven = true
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'cx1testgradle-gradle-dev'
+            username = "${artifactory_user}" // Set Artifactory username here
+            password = "${artifactory_password}" // Set Artifactory password here
+            maven = true
+        }
+    }
+}
+
+task setupCheckmarxTools {
+    description = 'Set up Checkmarx One CLI and SCA Resolver for Windows, macOS, and Linux'
+
+    doLast {
+        def isWindows = org.gradle.internal.os.OperatingSystem.current().isWindows()
+        def isMacOs = org.gradle.internal.os.OperatingSystem.current().isMacOsX()
+        def isLinux = org.gradle.internal.os.OperatingSystem.current().isLinux()
+
+        if (isWindows) {
+            if (!file("ScaResolver/ScaResolver.exe").exists()) {
+                mkdir "ScaResolver"
+                exec {
+                    workingDir = "${projectDir}"
+                    commandLine 'powershell', '-Command',
+                        "Invoke-WebRequest -Uri ${SCA_RESOLVER_WIN_URL} -OutFile ScaResolver.zip; Expand-Archive -Path ScaResolver.zip -DestinationPath ScaResolver; Remove-Item ScaResolver.zip"
+                }
+            }
+
+            if (!file("CxONE_CLI/cx.exe").exists()) {
+                mkdir "CxONE_CLI"
+                exec {
+                    workingDir = "${projectDir}"
+                    commandLine 'powershell', '-Command',
+                        "Invoke-WebRequest -Uri ${CXONE_CLI_URL_WIN} -OutFile CxONE_CLI.zip; Expand-Archive -Path CxONE_CLI.zip -DestinationPath CxONE_CLI; Remove-Item CxONE_CLI.zip"
+                }
+            }
+        } else if (isMacOs) {
+            if (!file("ScaResolver/ScaResolver").exists()) {
+                mkdir "ScaResolver"
+                exec {
+                    workingDir = "${projectDir}"
+                    commandLine 'sh', '-c',
+                        "curl -LO ${SCA_RESOLVER_MACOS_URL} && tar -xzvf ScaResolver-macos64.tar.gz -C ScaResolver && rm ScaResolver-macos64.tar.gz"
+                }
+            }
+
+            if (!file("CxONE_CLI/cx").exists()) {
+                mkdir "CxONE_CLI"
+                exec {
+                    workingDir = "${projectDir}"
+                    commandLine 'sh', '-c',
+                        "curl -LO ${CXONE_CLI_URL_MACOS} && tar -xzvf ast-cli_2.2.3_darwin_x64.tar.gz -C CxONE_CLI && rm ast-cli_2.2.3_darwin_x64.tar.gz"
+                }
+            }
+        } else if (isLinux) {
+            if (!file("ScaResolver/ScaResolver").exists()) {
+                mkdir "ScaResolver"
+                exec {
+                    workingDir = "${projectDir}"
+                    commandLine 'sh', '-c',
+                        "curl -LO ${SCA_RESOLVER_LINUX_URL} && tar -xzvf ScaResolver-linux64.tar.gz -C ScaResolver && rm ScaResolver-linux64.tar.gz"
+                }
+            }
+
+            if (!file("CxONE_CLI/cx").exists()) {
+                mkdir "CxONE_CLI"
+                exec {
+                    workingDir = "${projectDir}"
+                    commandLine 'sh', '-c',
+                        "curl -LO ${CXONE_CLI_URL_LINUX} && tar -xzvf ast-cli_2.2.3_linux_x64.tar.gz -C CxONE_CLI && rm ast-cli_2.2.3_linux_x64.tar.gz"
+                }
+            }
+        }
+
+        println "Setup completed for ${isWindows ? 'Windows' : isMacOs ? 'macOS' : 'Linux'}"
+    }
+}
+
+task runCheckmarxScan(type: Exec, dependsOn: setupCheckmarxTools) {
+    description = 'Run Checkmarx One CLI Scan with SCA Resolver on Windows, macOS, and Linux'
+    
+    // Detect the operating system
+    def os = org.gradle.internal.os.OperatingSystem.current()
+
+    // Retrieve the CX_API_KEY from gradle.properties
+    def cxApiKey = project.findProperty('CX_API_KEY') ?: ''
+    if (cxApiKey.isEmpty()) {
+        throw new GradleException("CX_API_KEY is not defined in gradle.properties")
+    }
+
+    // Define absolute paths
+    def projectDirAbsolute = projectDir.absolutePath
+    def cxCliPath = os.isWindows() ? "${projectDirAbsolute}\\CxONE_CLI\\cx.exe" : "${projectDirAbsolute}/CxONE_CLI/cx"
+    def scaResolverPath = os.isWindows() ? "${projectDirAbsolute}\\ScaResolver\\ScaResolver.exe" : "${projectDirAbsolute}/ScaResolver/ScaResolver"
+
+    // Verify executables exist
+    if (!file(cxCliPath).exists()) {
+        throw new GradleException("Checkmarx CLI executable not found at: ${cxCliPath}")
+    }
+    if (!file(scaResolverPath).exists()) {
+        throw new GradleException("SCA Resolver executable not found at: ${scaResolverPath}")
+    }
+
+    // Construct and execute the command
+    if (os.isWindows()) {
+        commandLine 'powershell', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command',
+            "\"& '${cxCliPath}' scan create --project-name SampleGradleProject " +
+            "-s '${projectDirAbsolute}' " +
+            "--apikey '${cxApiKey}' " +
+            "--report-format sbom " +
+            "--report-sbom-format CycloneDxJson " +
+            "--sca-resolver '${scaResolverPath}' " +
+            "--sca-resolver-params '--log-level Debug'\""
+    } else {
+        commandLine 'sh', '-c',
+            "\"${cxCliPath}\" scan create --project-name SampleGradleProject " +
+            "-s \"${projectDirAbsolute}\" " +
+            "--apikey \"${cxApiKey}\" " +
+            "--report-format sbom " +
+            "--report-sbom-format CycloneDxJson " +
+            "--sca-resolver \"${scaResolverPath}\" " +
+            "--sca-resolver-params \"--log-level Debug\""
+    }
+
+    doLast {
+        println 'Checkmarx scan completed.'
+    }
+}

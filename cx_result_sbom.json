@@ -1,0 +1,188 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:ad110c38-cbca-4a69-950d-a6a4293e71a2",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-08-23T02:41:42Z",
+    "tools": {
+      "services": [
+        {
+          "provider": {
+            "name": "Checkmarx",
+            "url": [
+              "https://checkmarx.com/"
+            ],
+            "bom-ref": "Checkmarx"
+          },
+          "name": "Checkmarx SCA"
+        }
+      ]
+    },
+    "component": {
+      "type": "data",
+      "bom-ref": "ad110c38-cbca-4a69-950d-a6a4293e71a2",
+      "name": "Scan ad110c38-cbca-4a69-950d-a6a4293e71a2"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/com.google.code.gson/gson@2.8.8",
+      "name": "com.google.code.gson:gson",
+      "version": "2.8.8",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "431fc3cbc0ff81abdbfde070062741089c3ba874"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "c0f02b42d0474823279fc9606a81338896d59941"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "cf88588ea8314be9e3317e0528853376502a645c"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "text": {
+              "contentType": "text/plain",
+              "content": "A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code."
+            },
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/com.google.code.gson/gson@2.8.8",
+      "externalReferences": [
+        {
+          "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.8/gson-2.8.8-sources.jar",
+          "type": "other"
+        },
+        {
+          "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.8/gson-2.8.8.pom",
+          "type": "other"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:maven/org.apache.commons/commons-lang3@3.12.0",
+      "name": "org.apache.commons:commons-lang3",
+      "version": "3.12.0",
+      "hashes": [
+        {
+          "alg": "SHA-1",
+          "content": "198b882fdc2c72c89c63401d946f6ba46c3acea3"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "601a99dd2dc335b34afe856336ba398370a84f2b"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "c6842c86792ff03b9f1d1fe2aab8dc23aa6c6f0e"
+        },
+        {
+          "alg": "SHA-1",
+          "content": "da30511e7821201ee097429aacc0633b0a70d82b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "text": {
+              "contentType": "text/plain",
+              "content": "A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code."
+            },
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:maven/org.apache.commons/commons-lang3@3.12.0",
+      "externalReferences": [
+        {
+          "url": "https://gitbox.apache.org/repos/asf?p=commons-lang.git",
+          "type": "vcs"
+        },
+        {
+          "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0-sources.jar",
+          "type": "other"
+        },
+        {
+          "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.pom",
+          "type": "other"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "ad110c38-cbca-4a69-950d-a6a4293e71a2",
+      "dependsOn": [
+        "pkg:maven/com.google.code.gson/gson@2.8.8",
+        "pkg:maven/org.apache.commons/commons-lang3@3.12.0"
+      ]
+    },
+    {
+      "ref": "pkg:maven/com.google.code.gson/gson@2.8.8"
+    },
+    {
+      "ref": "pkg:maven/org.apache.commons/commons-lang3@3.12.0"
+    }
+  ],
+  "vulnerabilities": [
+    {
+      "id": "CVE-2022-25647",
+      "source": {
+        "name": "National Vulnerability Database",
+        "url": "https://nvd.nist.gov/vuln/detail/CVE-2022-25647"
+      },
+      "ratings": [
+        {
+          "score": 5,
+          "severity": "medium",
+          "method": "CVSSv2"
+        },
+        {
+          "score": 7.5,
+          "severity": "high",
+          "method": "CVSSv3"
+        }
+      ],
+      "cwes": [
+        502
+      ],
+      "description": "The package com.google.code.gson:gson before 2.8.9 is vulnerable to Deserialization of Untrusted Data via the 'writeReplace()' method in internal classes, which may lead to DoS attacks.",
+      "advisories": [
+        {
+          "title": "Advisory",
+          "url": "https://github.com/advisories/GHSA-4jrv-ppp4-jm57"
+        },
+        {
+          "title": "Pull request",
+          "url": "https://github.com/google/gson/pull/1991"
+        },
+        {
+          "title": "Commit",
+          "url": "https://github.com/google/gson/commit/e6fae590cf2a758c47cd5a17f9bf3780ce62c986"
+        },
+        {
+          "title": "Release Note",
+          "url": "https://github.com/google/gson/releases/tag/gson-parent-2.8.9"
+        }
+      ],
+      "published": "2022-05-01T16:15:00Z",
+      "affects": [
+        {
+          "ref": "pkg:maven/com.google.code.gson/gson@2.8.8"
+        }
+      ]
+    }
+  ]
+}
